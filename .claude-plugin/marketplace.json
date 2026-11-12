@@ -1,0 +1,16 @@
+{
+  "$schema": "https://anthropic.com/claude-code/marketplace.schema.json",
+  "name": "claude-cross-review",
+  "description": "Have other coding agents (Codex, Gemini, ...) review Claude Code's work before you see it.",
+  "owner": {
+    "name": "startergate"
+  },
+  "plugins": [
+    {
+      "name": "cross-review",
+      "description": "Runs configurable reviewer CLIs (Codex by default, several at once if you like) on uncommitted work before Claude reports it, and helps Claude answer Codex reviews on pull requests.",
+      "source": "./plugins/cross-review",
+      "category": "development"
+    }
+  ]
+}

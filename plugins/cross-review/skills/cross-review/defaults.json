@@ -1,0 +1,28 @@
+{
+  "enabled": true,
+  "reviewers": ["codex"],
+  "base": null,
+  "maxRounds": 2,
+  "timeoutSeconds": 900,
+  "maxDiffBytes": 200000,
+  "language": "English",
+  "exclude": [".env", ".env.*", "*.pem", "*.key", "*.p12", "id_rsa*", "*.lock", "package-lock.json"],
+  "definitions": {
+    "codex": {
+      "description": "OpenAI Codex CLI (signs in with a ChatGPT account)",
+      "check": "codex login status",
+      "command": "codex exec --sandbox read-only --skip-git-repo-check --ephemeral --color never -C {repo} -o {output} -"
+    },
+    "gemini": {
+      "description": "Google Gemini CLI",
+      "check": "command -v gemini",
+      "command": "gemini -p 'Review the changes as described on stdin. Do not modify any file.'"
+    }
+  },
+  "pr": {
+    "reviewer": "codex",
+    "request": "comment",
+    "requestComment": "@codex review",
+    "botLogins": ["chatgpt-codex-connector[bot]", "chatgpt-codex-connector"]
+  }
+}
