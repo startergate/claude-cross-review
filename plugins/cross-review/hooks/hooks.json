@@ -1,5 +1,5 @@
 {
-  "description": "Reminds Claude to run cross-review before reporting work, and to follow up on the Codex review after it opens a pull request.",
+  "description": "Reminds Claude to run cross-review before reporting work, and posts the Codex review request when Claude opens a pull request.",
   "hooks": {
     "SessionStart": [
       {
@@ -19,8 +19,7 @@
           {
             "type": "command",
             "command": "python3 \"${CLAUDE_PLUGIN_ROOT}/skills/cross-review/scripts/cross_review.py\" hook-pr-created || true",
-            "if": "Bash(gh pr create *)",
-            "timeout": 10
+            "timeout": 40
           }
         ]
       }

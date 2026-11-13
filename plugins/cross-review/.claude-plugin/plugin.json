@@ -1,11 +1,16 @@
 {
   "name": "cross-review",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "Runs configurable reviewer CLIs (Codex by default, several at once if you like) on uncommitted work before Claude reports it, and helps Claude answer Codex reviews on pull requests.",
   "author": {
     "name": "startergate"
   },
   "repository": "https://github.com/startergate/claude-cross-review",
   "license": "MIT",
-  "keywords": ["review", "codex", "gemini", "code-review"]
+  "keywords": [
+    "review",
+    "codex",
+    "gemini",
+    "code-review"
+  ]
 }

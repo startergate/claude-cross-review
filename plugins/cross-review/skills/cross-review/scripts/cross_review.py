@@ -16,6 +16,7 @@ import concurrent.futures
 import fnmatch
 import json
 import os
+import re
 import shlex
 import subprocess
 import sys
@@ -313,7 +314,7 @@ def cmd_pr_feedback(args):
     bots = set(config.get("pr", {}).get("botLogins") or [])
     os.chdir(repo or os.getcwd())
     pr = gh_json("pr", "view", str(args.pr), "--json", "number,url,headRefOid,headRefName,baseRefName")
-    nwo = gh_json("repo", "view", "--json", "nameWithOwner")["nameWithOwner"]
+    nwo = "/".join(pr["url"].split("/")[3:5])  # owner/repo of the PR itself
     number = pr["number"]
 
     def by_bot(item):
@@ -372,25 +373,59 @@ def cmd_hook_session_start(_args):
     )
 
 
+# github.com or a GitHub Enterprise host, as printed by gh pr create
+PR_URL = re.compile(r"https://[\w.-]+(?::\d+)?/[\w.-]+/[\w.-]+/pull/\d+")
+
+
+def tool_text(value):
+    """Flatten a hook's tool_response (dict, list or string) into one string."""
+    if isinstance(value, dict):
+        return "\n".join(tool_text(v) for v in value.values())
+    if isinstance(value, list):
+        return "\n".join(tool_text(v) for v in value)
+    return value if isinstance(value, str) else ""
+
+
 def cmd_hook_pr_created(_args):
     try:
-        payload = json.load(sys.stdin)
+        payload = json.load(sys.stdin) or {}
     except ValueError:
         payload = {}
-    repo = repo_root((payload or {}).get("cwd") or os.getcwd())
+    command = ((payload.get("tool_input") or {}).get("command")) or ""
+    if "gh pr create" not in command:
+        return
+    urls = PR_URL.findall(tool_text(payload.get("tool_response")))
+    if not urls:
+        return  # the PR was not created (dry run, error, or --web)
+    url = urls[-1]
+    repo = repo_root(payload.get("cwd") or os.getcwd())
     config = load_config(repo)
     if not config.get("enabled", True):
         return
     pr = config.get("pr") or {}
     if pr.get("request") == "comment":
-        step = "Post the review request now with `cross_review.py pr-request <number>`. "
+        body = pr.get("requestComment") or "@codex review"
+        result = subprocess.run(
+            ["gh", "pr", "comment", url, "--body", body],
+            capture_output=True,
+            text=True,
+            timeout=30,
+        )
+        if result.returncode == 0:
+            step = "The review request (`%s`) was posted on %s automatically; do not post it again. " % (body, url)
+        else:
+            step = (
+                "Posting the review request on %s failed (%s). Post it with "
+                "`cross_review.py pr-request %s` and tell the user if that fails too. "
+                % (url, (result.stderr or result.stdout).strip()[:300], url)
+            )
     else:
         step = "The %s GitHub integration reviews new pull requests on its own. " % pr.get("reviewer", "codex")
     hook_output(
         "PostToolUse",
         "cross-review: a pull request was just opened. " + step +
-        "The review arrives later: check it with `cross_review.py pr-feedback <number>` on your next turn "
-        "or when the user asks, then fix what is valid, push, and reply to each review comment.",
+        "The review arrives later: check it with `cross_review.py pr-feedback %s` on your next turn "
+        "or when the user asks, then fix what is valid, push, and reply to each review comment." % url,
     )
 
 

@@ -26,7 +26,7 @@ PR 단계는 chatgpt.com의 Codex 설정에서 저장소를 연결해 둡니다.
 
 ## 사용
 
-- 자동: 세션 시작 시 훅이 Claude에게 "보여주기 전에 cross-review 실행"을 알려 줍니다. `gh pr create` 직후에는 PR 리뷰 확인을 알려 줍니다.
+- 자동: 세션 시작 시 훅이 Claude에게 "보여주기 전에 cross-review 실행"을 알려 줍니다. Claude가 `gh pr create`로 PR을 열면 훅이 `@codex review` 요청 코멘트를 직접 달고, 리뷰 확인을 알려 줍니다. 사람이 GitHub 화면 등에서 직접 연 PR에는 달리지 않습니다.
 - 직접: `/cross-review`, `/cross-review codex,gemini`, `/cross-review pr 12`
 
 ## 설정

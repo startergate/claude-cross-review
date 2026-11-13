@@ -49,7 +49,7 @@ Settings merge in this order, later wins: the plugin's `defaults.json` → user 
 
 ## Mode 2: after opening a pull request
 
-1. If `pr.request` is `"comment"` (default), ask for the review right after `gh pr create`: `SCRIPT pr-request <number>`. With `"auto"` the reviewer's GitHub integration reviews every new pull request on its own, so do nothing.
+1. If `pr.request` is `"comment"` (default), the plugin's hook posts the review request (`pr.requestComment`) by itself right after a successful `gh pr create`, and tells you so. Do not post it again. Only if the hook reports a failure, post it with `SCRIPT pr-request <number>`. With `"auto"` the reviewer's GitHub integration reviews every new pull request on its own.
 2. The review arrives minutes later. Do not wait in a loop. On your next turn, or when the user asks, run `SCRIPT pr-feedback <number>`. It prints the bot's reviews and inline comments, each with the commit it was written for and the command to reply to it.
 3. If there is no review yet, say so and check again on a later turn.
 4. Judge each comment as in mode 1. Fix valid ones on the PR branch, run tests and build, and push only if the user's rules for this project allow pushing without asking; otherwise show the fix and ask first.
